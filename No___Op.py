@@ -63,9 +63,11 @@ def str2bin(s): return s.encode('hex')
 
 #########| Explit |#########
 
-#: Pwing	-> A part of communication and shellcode
-#: FSB 		-> A part of Format String Bug
-#: 
+#: Pwning
+#: Shellcode
+#: FSB 	
+#: Heap
+
 class Pwning:
 
 	def __init__(self, target):
@@ -97,7 +99,8 @@ class Pwning:
                 return data
 
 
-	def shellcode(self, flavor='x86.execve'):
+class Shellcode:
+	def __init__(self, flavor='x86.execve'):
 		if flavor == 'x86.execve':
 			# http://inaz2.hatenablog.com/entry/2014/03/13/013056
 			# execve("/bin/sh", {"/bin/sh", NULL}, NULL)
@@ -142,7 +145,7 @@ class FSB:
 		self.offset = offset
 		self.size = size
 
-        def generate(self, addr):
+        def rewrite(self, src, dest):
                 pass
 
         def get(self):
