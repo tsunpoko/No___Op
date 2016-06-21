@@ -65,19 +65,26 @@ def str2bin(s): return s.encode('hex')
 
 #: Pwning
 #: Shellcode
-#: FSB 	
+#: FSB
+#: dl-resolve
 #: Heap
 
 class Pwning:
+	#TODO debug=True
 
-	def __init__(self, target):
+	def __init__(self, target, debug=False):
+
 		self.HOST = target.split(':')[0]
 		self.PORT = int(target.split(':')[1], 10)
+		
+		print "[*]Connecting \"" + target + "\"..."
 
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.s.connect((self.HOST, self.PORT))
-		self.f = self.s.makefile("rw", bufsize=0)
-
+		try:
+			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.s.connect((self.HOST, self.PORT))
+			self.f = self.s.makefile("rw", bufsize=0)
+		except:
+			print "[*]Connection refused."
 
         def shell(self):
                 t = telnetlib.Telnet()
@@ -100,6 +107,7 @@ class Pwning:
 
 
 class Shellcode:
+	#TODO
 	def __init__(self, flavor='x86.execve'):
 		if flavor == 'x86.execve':
 			# http://inaz2.hatenablog.com/entry/2014/03/13/013056
@@ -140,6 +148,7 @@ class Shellcode:
 
 
 class FSB:
+	#TODO
         def __init__(self, header, size, offset):
                 self.payload = ''
 		self.offset = offset
@@ -151,11 +160,18 @@ class FSB:
         def get(self):
                 return self.payload
 
-
-def chain():
-	return res
-
 def p32(data): return struct.pack("<I", data)
 def u32(data): return struct.unpack("<I", data)[0]
 def p64(data): return struct.pack("<Q", data)
 def u64(data): return struct.unpack("<Q", data)[0]
+
+def chain(rop):
+	#TODO
+	res = ''
+	if len(rop[0]) < 8:
+		for i in rop:			
+			res += p32(rop[i])
+	else:
+		for i in rop:
+			res += p64(rop[i])
+	return res
