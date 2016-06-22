@@ -69,6 +69,23 @@ def str2bin(s): return s.encode('hex')
 #: dl-resolve
 #: Heap
 
+def p32(data): return struct.pack("<I", data)
+def u32(data): return struct.unpack("<I", data)[0]
+def p64(data): return struct.pack("<Q", data)
+def u64(data): return struct.unpack("<Q", data)[0]
+
+def chain(rop):
+        #TODO
+        res = ''
+        if len(rop[0]) < 8:
+                for i in rop:
+                        res += p32(rop[i])
+        else:
+                for i in rop:
+                        res += p64(rop[i])
+        return res
+
+
 class Pwning:
 	#TODO debug=True
 
@@ -86,18 +103,14 @@ class Pwning:
 		except:
 			print "[*]Connection refused."
 
-        def shell(self):
-                t = telnetlib.Telnet()
-                t.sock = self.s
-                print "4ll y0u n33d i5 5HELL!"
-                t.interact()
-
 	def write(self, msg):
 		self.f.write(msg)
 
 	def sendline(self, msg):
 		self.f.write(msg + '\n')
 
+	def recv(self, size=1024):
+		return self.s.recv(size)
 
         def read_until(self, delim='\n'):
                 data = ''
@@ -105,6 +118,13 @@ class Pwning:
                         data += self.f.read(1)
                 return data
 
+        def shell(self):
+                t = telnetlib.Telnet()
+                t.sock = self.s
+		self.write("PWNED\n")
+		self.read_until("PWNED")
+                print "4ll y0u n33d i5 5HELL!"
+                t.interact()
 
 class Shellcode:
 	#TODO
@@ -149,29 +169,34 @@ class Shellcode:
 
 class FSB:
 	#TODO
-        def __init__(self, header, size, offset):
+	#64bit Ver.
+
+        def __init__(self, offset, header=''):
                 self.payload = ''
 		self.offset = offset
-		self.size = size
-
+		
+	def sort(self, addr):
+		sort_addr = []
+		return addr		
+		
         def rewrite(self, src, dest):
-                pass
-
+		lsb = ( dest & 0x0000FFFF ) >> 0
+		msb = ( dest & 0xFFFF0000 ) >> 16
+		
+		addr = {}
+		addr[hex(src)] = lsb
+		addr[hex(src + 2)] = msb
+		
+		print self.sort(addr)
+		
+	#payload 
         def get(self):
                 return self.payload
 
-def p32(data): return struct.pack("<I", data)
-def u32(data): return struct.unpack("<I", data)[0]
-def p64(data): return struct.pack("<Q", data)
-def u64(data): return struct.unpack("<Q", data)[0]
+class Heap:
+	def __init__(self):
+		pass
 
-def chain(rop):
-	#TODO
-	res = ''
-	if len(rop[0]) < 8:
-		for i in rop:			
-			res += p32(rop[i])
-	else:
-		for i in rop:
-			res += p64(rop[i])
-	return res
+
+fsb = FSB(offset=7)
+fsb.rewrite( 0x12345678, 0xffffffff )
