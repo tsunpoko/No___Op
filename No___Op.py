@@ -130,8 +130,8 @@ class Pwning:
         def shell(self):
                 t = telnetlib.Telnet()
                 t.sock = self.s
-		self.write("echo PWNED\n")
-		self.read_until("PWNED")
+		#self.write("echo PWNED\n")
+		#self.read_until("PWNED")
                 print "4ll y0u n33d i5 5HELL!"
                 t.interact()
 
@@ -211,6 +211,10 @@ class FSB:
 			self.offset += 1
 
 		return self.payload
+
+class DLresolve:
+	def __init__(self):
+		pass
 class Heap:
 	def __init__(self):
 		pass
