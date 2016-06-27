@@ -1,7 +1,7 @@
 # Usage of No___Op
 
 ## fsb.py
-```
+```python
 from No___Op import *
 
 #socat TCP-LISTEN:17171,reuseaddr,fork EXEC:./test
