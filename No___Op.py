@@ -18,16 +18,6 @@ def _rotN(c, n):
 def rotN(st, num=13):
 	return ''.join( _rotN(ch, num) for ch in st )
 
-
-
-def scytale(st, num=5):
-	s = ''
-	n = 0
-	for i in range(len(st)):
-		s += st[n%len(st)]
-		n += num
-	return s
-
 table = {'.-' : 'A',    '-...': 'B',   '-.-.': 'C',
 	'-..' : 'D',    '.'   : 'E',   '..-.': 'F',
        	'--.' : 'G',    '....': 'H',   '..'  : 'I',
@@ -67,10 +57,6 @@ def enc_morse( text ):
 		res += lookup[i.upper()] + ' '
 	return res
 
-def bin2str(s): return s.decode('hex')
-def str2bin(s): return s.encode('hex')
-
-
 #########| Explit |#########
 
 #: Pwning
@@ -95,6 +81,13 @@ def chain(rop):
                         res += p64(rop[i])
         return res
 
+def info(a):
+	print "[*]" + a
+
+def info_pay(payload):
+	print "[*]Sending Payload..."
+	print payload
+
 
 class Pwning:
 	#TODO debug=True
@@ -113,10 +106,10 @@ class Pwning:
 			self.s.connect((self.HOST, self.PORT))
 			self.f = self.s.makefile("rw", bufsize=0)
 		except:
-			print "[*]Connection refused."
+			print "[-]Connection refused."
 			sys.exit()
 
-		print "[*]Connection success!"
+		print "[+]Connection success!"
 
 	def write(self, msg):
 		self.f.write(msg)
@@ -147,6 +140,7 @@ class Pwning:
 		#self.write("ls -lia\n")
                 print "4ll y0u n33d i5 5HELL!"
                 t.interact()
+		sys.exit("[-]Connection closed.")
 
 class Shellcode:
 	#TODO
@@ -234,6 +228,11 @@ class FSB:
 			self.offset += 1
 
 		return self.header + self.payload
+
+class DLresolve:
+	def __init__(self):
+		pass
+
 class Heap:
 	#TODO
 	def __init__(self):
