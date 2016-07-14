@@ -196,7 +196,7 @@ class FSB:
 		
 		if len(header):
 			if len(header) % 4:
-				print "[*] padding payload..."
+				print "[*]Padding payload..."
 				padding =  '?' * (4 - (len(header)%4))
 			else:
 				padding =  ''
