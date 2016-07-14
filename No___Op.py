@@ -1,10 +1,10 @@
 import os
-from collections import OrderedDict
 import socket
 import telnetlib
 import sys
 import struct
 import time
+from collections import OrderedDict
 
 def _rotN(c, n):
 	if "A" <= c and c <= "Z":
@@ -18,15 +18,6 @@ def _rotN(c, n):
 def rotN(st, num=13):
 	return ''.join( _rotN(ch, num) for ch in st )
 
-
-
-def scytale(st, num=5):
-	s = ''
-	n = 0
-	for i in range(len(st)):
-		s += st[n%len(st)]
-		n += num
-	return s
 
 table = {'.-' : 'A',    '-...': 'B',   '-.-.': 'C',
 	'-..' : 'D',    '.'   : 'E',   '..-.': 'F',
@@ -67,9 +58,6 @@ def enc_morse( text ):
 		res += lookup[i.upper()] + ' '
 	return res
 
-def bin2str(s): return s.decode('hex')
-def str2bin(s): return s.encode('hex')
-
 
 #########| Explit |#########
 
@@ -79,21 +67,39 @@ def str2bin(s): return s.encode('hex')
 #: dl-resolve
 #: Heap
 
-def p32(data): return struct.pack("<I", data)
-def u32(data): return struct.unpack("<I", data)[0]
-def p64(data): return struct.pack("<Q", data)
-def u64(data): return struct.unpack("<Q", data)[0]
+def p32(data) : return struct.pack("<I", data)
+def u32(data) : return struct.unpack("<I", data)[0]
+def p64(data) : return struct.pack("<Q", data)
+def u64(data) : return struct.unpack("<Q", data)[0]
+def chain(rop): return ''.join(map(lambda x:x if type(x)==str else p32(x), rop))
 
-def chain(rop):
-        #TODO
-        res = ''
-        if len(rop[0]) < 8:
-                for i in rop:
-                        res += p32(rop[i])
-        else:
-                for i in rop:
-                        res += p64(rop[i])
-        return res
+WHITE_BACK = '\033[107m'
+BLACK_BACK = '\033[100m'
+WHITE = '\033[97m'
+L_BLUE = '\033[96m'
+PINK = '\033[95m'
+BLUE = '\033[94m'
+YELLOW = '\033[93m'
+GREEN = '\033[92m'
+RED = '\033[91m'
+BLACK = '\033[90m'
+END_CODE = '\033[0m'
+
+def info(st):
+	print "[" + GREEN + "*" + END_CODE + "]" + st
+
+def info_pay(payload):
+	print "[" + GREEN + "*" + END_CODE + "]" + "Sending Payload..." + END_CODE
+	print BLACK_BACK + payload + END_CODE
+
+def succ(st):
+	print "[" + L_BLUE + "+" + END_CODE + "]" + st
+
+def warn(st):
+	print "[" + YELLOW + "!" + END_CODE + "]" + st
+
+def fail(st):
+	print "[" + RED + "-" + END_CODE + "]" + st
 
 
 class Pwning:
@@ -104,7 +110,7 @@ class Pwning:
 		self.HOST = target.split(':')[0]
 		self.PORT = int(target.split(':')[1], 10)
 		
-		print "[*]Connecting \"" + target + "\"..."
+		info("Connecting \"" + target + "\"...")
 		
 		time.sleep(0.5)	
 	
@@ -113,10 +119,10 @@ class Pwning:
 			self.s.connect((self.HOST, self.PORT))
 			self.f = self.s.makefile("rw", bufsize=0)
 		except:
-			print "[*]Connection refused."
+			fail("Connection refused.")
 			sys.exit()
 
-		print "[*]Connection success!"
+		succ("Connection success!")
 
 	def write(self, msg):
 		self.f.write(msg)
@@ -139,14 +145,14 @@ class Pwning:
                 t.interact()
 
         def shell(self):
-                t = telnetlib.Telnet()
-                t.sock = self.s
+               	t = telnetlib.Telnet()
+               	t.sock = self.s
 		self.recv(1)
 		self.write("echo PWNED\n")
 		self.read_until("PWNED")
 		#self.write("ls -lia\n")
-                print "4ll y0u n33d i5 5HELL!"
-                t.interact()
+               	print "*** 4ll y0u n33d i5 5HELL! ***"
+               	t.interact()
 
 class Shellcode:
 	#TODO
@@ -202,7 +208,7 @@ class FSB:
 		
 		if len(header):
 			if len(header) % 4:
-				print "[*] padding payload..."
+				info("Padding Payload...")
 				padding =  '?' * (4 - (len(header)%4))
 			else:
 				padding =  ''
@@ -216,6 +222,7 @@ class FSB:
 		
 		self.addr[hex(src)] = lsb
 		self.addr[hex(src + 2)] = msb
+		info('overwrite : ' + hex(src) + ' -> ' + hex(dst))
 
         def get(self):
 		addr = OrderedDict(sorted(self.addr.items(), key=lambda x:x[1]))
